@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hero Battle</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--panel:rgba(18,28,38,.78);--line:rgba(255,255,255,.14);--text:#ece0c4;--mute:#a9b7c2;--ember:#e0603a;--gold:#d9a441;--moss:#6fa36b;--blood:#c2453d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:#101a22}
+body{margin:0;color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;background-attachment:fixed;transition:background 1s}
+body.forest{background:radial-gradient(circle at 85% 8%,#f3ecc0 0 22px,rgba(243,236,192,.25) 40px,transparent 90px),radial-gradient(ellipse 120% 40% at 20% 100%,#0c2a1e 0 60%,transparent 61%),radial-gradient(ellipse 100% 35% at 90% 100%,#103a28 0 60%,transparent 61%),linear-gradient(#0d1f2b,#173f3a)}
+body.crypt{background:radial-gradient(circle at 15% 10%,#d7d0f0 0 18px,rgba(180,160,240,.25) 40px,transparent 90px),radial-gradient(ellipse 130% 40% at 70% 100%,#1c1530 0 60%,transparent 61%),radial-gradient(ellipse 90% 30% at 10% 100%,#2b2146 0 60%,transparent 61%),linear-gradient(#120d22,#35264f)}
+body.volcano{background:radial-gradient(ellipse 80% 40% at 50% 105%,#ff7a2a 0 20%,rgba(255,90,30,.35) 50%,transparent 75%),radial-gradient(ellipse 140% 30% at 30% 100%,#2a0c0a 0 60%,transparent 61%),linear-gradient(#1d0a0c,#5a1c12)}
+#app{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top,0) 14px calc(env(safe-area-inset-bottom,0) + 16px)}
+h1,.title{font-family:Cinzel,Georgia,serif;font-weight:800;margin:0}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 0 8px}
+.title small{display:block;font:500 13px system-ui,sans-serif;color:var(--mute)}
+.coins{font-weight:800;color:#ffe08a;background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:20px}
+.coins.bump{animation:bump .5s}
+@keyframes bump{40%{transform:scale(1.25)}}
+.coin{display:inline-block;width:1em;height:1em;border-radius:50%;background:radial-gradient(circle at 32% 30%,#fff1b8,#e3ac3c 55%,#9a6b14);box-shadow:inset 0 0 0 2px #b8821f;vertical-align:-.13em;margin-right:3px}
+.bar{height:10px;background:rgba(0,0,0,.45);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;transition:width .3s}
+.hp i{background:linear-gradient(#8fd08a,#4f8a55)}.ehp i{background:linear-gradient(#e8665e,#9a2e29)}.xp i{background:linear-gradient(#f0c15a,#b8821f)}
+.tabs{display:flex;gap:8px;margin:12px 0}
+.tabs button{flex:1;padding:10px 4px;background:var(--panel);color:var(--mute);border:1px solid var(--line);border-radius:10px;font:inherit;font-weight:600;backdrop-filter:blur(4px)}
+.tabs button.on{background:var(--ember);color:#fff;border-color:var(--ember)}
+.zone{text-align:center;font:800 18px Cinzel,serif;color:var(--text);margin:6px 0 10px;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.arena{position:relative;display:flex;justify-content:space-around;align-items:flex-end;padding:22px 6px 16px;background:linear-gradient(transparent 55%,rgba(0,0,0,.38));border:1px solid var(--cc);box-shadow:0 0 22px -6px var(--cc),inset 0 0 30px -14px var(--cc);border-radius:18px;margin-bottom:12px}
+.fighter{text-align:center;width:42%}
+.fighter{position:relative}
+.fighter .em{font-size:78px;line-height:1.15;filter:drop-shadow(0 8px 6px rgba(0,0,0,.55));background:radial-gradient(ellipse 45% 9% at 50% 90%,rgba(0,0,0,.55),transparent);animation:bob 2.6s ease-in-out infinite}
+.fighter.e .em{animation-delay:-1.3s}
+.fighter.hurt .em{animation:shake .35s}
+@keyframes bob{50%{transform:translateY(-7px)}}
+@keyframes shake{25%{transform:translateX(-9px) rotate(-5deg)}75%{transform:translateX(9px) rotate(5deg)}}
+.dmg{position:absolute;left:50%;top:6px;font:800 24px Cinzel,serif;color:#fff;text-shadow:0 2px 6px #000;animation:fl 1s forwards;pointer-events:none}
+.dmg.crit{color:#ffd24a;font-size:34px}.dmg.heal{color:#8fd08a}
+#app{position:relative;z-index:1}
+body.forest::before,body.crypt::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.75;animation:tw 3s ease-in-out infinite alternate;background-image:radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 60% 18%,#fff,transparent),radial-gradient(2px 2px at 78% 42%,#fff,transparent),radial-gradient(1.5px 1.5px at 35% 12%,#fff,transparent),radial-gradient(1.5px 1.5px at 10% 55%,#fff,transparent),radial-gradient(2px 2px at 90% 25%,#fff,transparent)}
+body.volcano::before{content:"";position:fixed;inset:0;pointer-events:none;animation:tw 2s ease-in-out infinite alternate;background-image:radial-gradient(2px 2px at 25% 70%,#ffb347,transparent),radial-gradient(2px 2px at 70% 60%,#ff8c42,transparent),radial-gradient(1.5px 1.5px at 50% 80%,#ffd27a,transparent),radial-gradient(2px 2px at 85% 75%,#ff8c42,transparent)}
+@keyframes tw{from{opacity:.25}to{opacity:.9}}
+.fighter small{display:block;color:var(--text);margin:4px 0;font-size:13px}
+.vs{font-family:Cinzel,serif;color:var(--mute);padding-bottom:50px;font-size:13px;text-align:center}
+.float{position:absolute;left:50%;top:30%;font:800 26px Cinzel,serif;color:#ffe08a;text-shadow:0 2px 8px #000;animation:fl 1.4s forwards;pointer-events:none}
+@keyframes fl{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-70px);opacity:0}}
+.log{min-height:70px;background:rgba(0,0,0,.45);border-radius:12px;padding:10px 12px;color:var(--mute);font-size:14px;margin-bottom:12px}
+.log p{margin:2px 0}.log p:last-child{color:var(--text)}
+.hint{color:var(--mute);font-size:13px;text-align:center;margin:-4px 0 10px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button.act{padding:15px 8px;border:0;border-radius:14px;font:inherit;font-weight:800;color:#fff;background:linear-gradient(#f28a5e,#c4482a);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -3px 0 rgba(0,0,0,.25),0 4px 0 rgba(0,0,0,.4);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+button.act.alt{background:linear-gradient(rgba(255,255,255,.25),rgba(0,0,0,.2)),var(--cc)}button.act.heal{background:#4f8a55;grid-column:span 2}
+button:disabled{opacity:.4}
+button:active:not(:disabled){transform:scale(.97)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(4px)}
+.card.cur{border-color:var(--cc)}
+.card .em{font-size:38px}.card div{flex:1}.card b{display:block}.card small{display:block;color:var(--mute);font-size:13px}
+.card button{padding:10px 12px;border:0;border-radius:10px;background:var(--gold);color:#2a1d05;font:inherit;font-weight:700;white-space:nowrap}
+.card button.sel{background:#4f8a55;color:#fff}
+.center{text-align:center;padding:26px 0 10px}
+.link{background:none;border:0;color:var(--mute);text-decoration:underline;font:inherit;margin-top:10px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="forest">
+<div id="app"></div>
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor('#101a22'); tg.setBackgroundColor('#101a22'); } catch (e) {} }
+const buzz = t => { try { tg.HapticFeedback.impactOccurred(t || 'light'); } catch (e) {} };
+const userName = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'Qahramon';
+const C = n => '<span class="coin"></span>' + n;
+
+const CL = {
+  novice:   { n: 'Yangi qahramon', em: '🧑', hp: 100, atk: 12, sp: 'Zarba', mult: 1.8, cost: 0, lvl: 1, col: '#a9b7c2', pas: 'Hamma shu yerdan boshlaydi' },
+  jangchi:  { n: 'Jangchi', em: '🛡️', hp: 130, atk: 14, sp: 'Kuchli zarba', mult: 2.2, cost: 120, lvl: 3, col: '#6fa3d9', pas: 'Zirh: olinadigan zarar 15% kam' },
+  jodugar:  { n: 'Jodugar', em: '🧙', hp: 90, atk: 18, sp: 'Olov to‘pi', mult: 2.0, cost: 150, lvl: 4, col: '#e0603a', pas: 'Olov to‘pi dushmanni 3 yurish yondiradi' },
+  kamonchi: { n: 'Kamonchi', em: '🏹', hp: 100, atk: 16, sp: 'Ikki o‘q', mult: 1.3, cost: 150, lvl: 4, col: '#6fa36b', pas: 'Kritik zarba ehtimoli yuqori, ikki marta o‘q otadi' },
+  qotil:    { n: 'Qotil', em: '🥷', hp: 95, atk: 17, sp: 'Yashirin zarba', mult: 2.4, cost: 250, lvl: 6, col: '#a06fd0', pas: 'Zarbadan 25% qochadi, maxsus zarba doim kritik' },
+  ruhoniy:  { n: 'Ruhoniy', em: '🧝', hp: 115, atk: 13, sp: 'Muqaddas nur', mult: 1.2, cost: 250, lvl: 6, col: '#f0d98a', pas: 'Har yurishda 4% HP tiklaydi, nur ham davolaydi' }
+};
+const ZONES = {
+  forest: { n: 'Sehrli o‘rmon', en: [['Goblin', '👺'], ['Bo‘ri', '🐺'], ['O‘rgimchak', '🕷️']] },
+  crypt: { n: 'Qabriston', en: [['Skelet', '💀'], ['Zombi', '🧟'], ['Arvoh', '👻']] },
+  volcano: { n: 'Vulqon', en: [['Ajdarcha', '🐲'], ['Olov jini', '🔥'], ['Lava devi', '🌋']] }
+};
+const def = () => ({ cls: 'novice', owned: ['novice'], lvl: 1, xp: 0, coins: 0, wpn: 0, arm: 0, pots: 2, wave: 1 });
+
+let S = load(), tab = 'fight', B = null;
+
+function load() {
+  try {
+    const s = Object.assign(def(), JSON.parse(localStorage.getItem('hb2') || '{}'));
+    if (!CL[s.cls] || !Array.isArray(s.owned)) return def();
+    return s;
+  } catch (e) { return def(); }
+}
+function save() {
+  const j = JSON.stringify(S);
+  try { localStorage.setItem('hb2', j); } catch (e) {}
+  try { tg.CloudStorage.setItem('hb2', j); } catch (e) {}
+}
+
+const K = () => CL[S.cls];
+const zone = () => S.wave < 5 ? 'forest' : S.wave < 10 ? 'crypt' : 'volcano';
+const maxHp = () => K().hp + (S.lvl - 1) * 12 + S.arm * 15;
+const atk = () => K().atk + (S.lvl - 1) * 2 + S.wpn * 4;
+const need = () => 30 + S.lvl * 20;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const wpnCost = () => Math.round(25 * (S.wpn + 1) * 1.4);
+const armCost = () => Math.round(25 * (S.arm + 1) * 1.4);
+
+function newFight() {
+  const boss = S.wave % 5 === 0, z = ZONES[zone()];
+  const [n, em] = boss ? ['Boss', '👹'] : z.en[S.wave % 3];
+  const hp = Math.round((40 + S.wave * 22) * (boss ? 2 : 1));
+  B = { php: maxHp(), e: { name: n, em, hp, max: hp, atk: (6 + S.wave * 2.5) * (boss ? 1.5 : 1) }, cd: 0, burn: 0, busy: false, over: false, lost: false, gain: 0, log: ['Dushman paydo bo‘ldi: ' + n + '!'] };
+}
+function say(t) { B.log.push(t); if (B.log.length > 3) B.log.shift(); }
+
+function hit(mult, label, force) {
+  let d = atk() * mult * rnd(.85, 1.15);
+  const crit = force || Math.random() < (S.cls === 'kamonchi' ? .22 : .12);
+  if (crit) d *= 1.5;
+  d = Math.round(d);
+  B.e.hp = Math.max(0, B.e.hp - d);
+  say(label + ': ' + d + ' zarar' + (crit ? ' (kritik!)' : '')); B.fxE = { d, crit };
+  buzz(crit ? 'heavy' : 'light');
+}
+function heal(p) { const h = Math.round(maxHp() * p); B.php = Math.min(maxHp(), B.php + h); B.fxH = h; return h; }
+
+function special() {
+  const k = K();
+  if (S.cls === 'jodugar') { hit(k.mult, k.sp); B.burn = 3; }
+  else if (S.cls === 'kamonchi') { hit(k.mult, 'Birinchi o‘q'); if (B.e.hp > 0) hit(k.mult, 'Ikkinchi o‘q'); }
+  else if (S.cls === 'qotil') hit(k.mult, k.sp, true);
+  else if (S.cls === 'ruhoniy') { hit(k.mult, k.sp); say('Nur: +' + heal(.3) + ' HP'); }
+  else hit(k.mult, k.sp);
+  B.cd = 3;
+}
+
+function turn(kind) {
+  if (B.busy || B.over) return;
+  if (kind === 'atk') { hit(1, 'Hujum'); B.cd = Math.max(0, B.cd - 1); }
+  if (kind === 'sp') { if (B.cd > 0) return; special(); }
+  if (kind === 'heal') {
+    if (S.pots < 1 || B.php >= maxHp()) return;
+    S.pots--; say('Eliksir: +' + heal(.4) + ' HP'); B.cd = Math.max(0, B.cd - 1); save();
+  }
+  if (B.burn > 0 && B.e.hp > 0) { const b = Math.round(atk() * .5); B.e.hp = Math.max(0, B.e.hp - b); B.burn--; say('Olov: ' + b + ' zarar'); }
+  if (B.e.hp <= 0) return win();
+  B.busy = true; render();
+  setTimeout(() => {
+    if (S.cls === 'qotil' && Math.random() < .25) say('Qotil zarbadan qochdi!');
+    else {
+      let d = B.e.atk * rnd(.85, 1.15) - S.arm * 1.5;
+      if (S.cls === 'jangchi') d *= .85;
+      d = Math.max(1, Math.round(d)); B.php = Math.max(0, B.php - d);
+      say(B.e.name + ' sizga ' + d + ' zarar yetkazdi'); buzz('medium'); B.fxP = { d };
+    }
+    if (B.php <= 0) return lose();
+    if (S.cls === 'ruhoniy') heal(.04);
+    B.busy = false; render();
+  }, 550);
+}
+
+function win() {
+  const coins = 8 + S.wave * 4, xp = 12 + S.wave * 5;
+  S.coins += coins; S.xp += xp; S.wave++; B.gain = coins;
+  say('G‘alaba! +' + coins + ' tanga, +' + xp + ' XP');
+  while (S.xp >= need()) {
+    S.xp -= need(); S.lvl++; say(S.lvl + '-daraja!');
+    const open = Object.keys(CL).filter(k => CL[k].lvl === S.lvl);
+    if (open.length) say('Yangi sinf ochildi: ' + open.map(k => CL[k].n).join(', '));
+  }
+  B.over = true; save(); buzz('heavy'); render();
+}
+function lose() { say('Siz yengildingiz. Qaytadan urinib ko‘ring!'); B.over = true; B.lost = true; B.busy = false; render(); }
+
+function buy(w) {
+  if (w === 'wpn' && S.coins >= wpnCost()) { S.coins -= wpnCost(); S.wpn++; }
+  else if (w === 'arm' && S.coins >= armCost()) { S.coins -= armCost(); S.arm++; }
+  else if (w === 'pot' && S.coins >= 15) { S.coins -= 15; S.pots++; }
+  else { buzz('heavy'); return; }
+  save(); buzz('medium'); render();
+}
+function useClass(k) {
+  const c = CL[k];
+  if (!S.owned.includes(k)) {
+    if (S.lvl < c.lvl || S.coins < c.cost) { buzz('heavy'); return; }
+    S.coins -= c.cost; S.owned.push(k);
+  }
+  S.cls = k; save(); tab = 'fight'; newFight(); buzz('medium'); render();
+}
+function resetAll() { if (confirm('Barcha yutuqlar o‘chib, o‘yin boshidan boshlanadi. Davom etasizmi?')) { S = def(); save(); B = null; tab = 'fight'; render(); } }
+function go(t) { tab = t; render(); }
+function again() { newFight(); render(); }
+
+function render() {
+  if (!B) newFight();
+  const k = K(), z = zone(), app = document.getElementById('app');
+  document.body.className = z;
+  let h = '<div class="top"><div class="title">' + k.n + '<small>' + S.lvl + '-daraja · ' + userName + '</small></div><div class="coins" id="cn">' + C(S.coins) + '</div></div>' +
+    '<div class="bar xp"><i style="width:' + Math.round(S.xp / need() * 100) + '%"></i></div>' +
+    '<div class="tabs">' + [['fight', 'Jang'], ['cls', 'Sinflar'], ['shop', 'Do‘kon']].map(t => '<button class="' + (tab === t[0] ? 'on' : '') + '" onclick="go(\'' + t[0] + '\')">' + t[1] + '</button>').join('') + '</div>';
+
+  if (tab === 'fight') {
+    const e = B.e, off = B.busy || B.over;
+    h += '<div class="zone">' + ZONES[z].n + '</div>' +
+      '<div class="arena" style="--cc:' + k.col + '"><div class="fighter' + (B.fxP ? ' hurt' : '') + '"><div class="em">' + k.em + '</div>' + (B.fxP ? '<div class="dmg">-' + B.fxP.d + '</div>' : '') + (B.fxH ? '<div class="dmg heal">+' + B.fxH + '</div>' : '') + '<small>' + B.php + '/' + maxHp() + '</small><div class="bar hp"><i style="width:' + Math.round(B.php / maxHp() * 100) + '%"></i></div></div>' +
+      '<div class="vs">' + S.wave + '-bosqich</div>' +
+      '<div class="fighter e' + (B.fxE ? ' hurt' : '') + '"><div class="em">' + e.em + '</div>' + (B.fxE ? '<div class="dmg' + (B.fxE.crit ? ' crit' : '') + '">-' + B.fxE.d + '</div>' : '') + '<small>' + e.name + ' · ' + e.hp + '/' + e.max + (B.burn > 0 ? ' 🔥' : '') + '</small><div class="bar ehp"><i style="width:' + Math.round(e.hp / e.max * 100) + '%"></i></div></div>' +
+      (B.gain ? '<div class="float">+' + B.gain + ' <span class="coin"></span></div>' : '') + '</div>' +
+      '<div class="log">' + B.log.map(l => '<p>' + l + '</p>').join('') + '</div>';
+    if (S.cls === 'novice' && S.lvl < 3) h += '<div class="hint">3-darajada yangi sinflar ochiladi. Sinflar bo‘limiga qarang!</div>';
+    if (B.over) h += '<div class="acts"><button class="act heal" onclick="again()">' + (B.lost ? 'Qayta urinish' : 'Keyingi dushman') + '</button></div>';
+    else h += '<div class="acts" style="--cc:' + k.col + '"><button class="act" ' + (off ? 'disabled' : '') + ' onclick="turn(\'atk\')">⚔️ Hujum</button>' +
+      '<button class="act alt" ' + (off || B.cd > 0 ? 'disabled' : '') + ' onclick="turn(\'sp\')">✨ ' + k.sp + (B.cd > 0 ? ' (' + B.cd + ')' : '') + '</button>' +
+      '<button class="act heal" ' + (off || S.pots < 1 ? 'disabled' : '') + ' onclick="turn(\'heal\')">🧪 Eliksir (' + S.pots + ')</button></div>';
+  } else if (tab === 'cls') {
+    h += Object.keys(CL).map(id => {
+      const c = CL[id], own = S.owned.includes(id), cur = S.cls === id;
+      let btn = cur ? '<button class="sel" disabled>Tanlangan</button>' : own ? '<button onclick="useClass(\'' + id + '\')">Tanlash</button>' :
+        S.lvl < c.lvl ? '<button disabled>🔒 ' + c.lvl + '-daraja</button>' : '<button ' + (S.coins < c.cost ? 'disabled' : '') + ' onclick="useClass(\'' + id + '\')">' + C(c.cost) + '</button>';
+      return '<div class="card' + (cur ? ' cur' : '') + '" style="--cc:' + c.col + '"><span class="em">' + c.em + '</span><div><b>' + c.n + '</b><small>' + c.hp + ' HP · hujum ' + c.atk + ' · ' + c.sp + '</small><small>' + c.pas + '</small></div>' + btn + '</div>';
+    }).join('');
+  } else {
+    h += '<div class="card"><span class="em">⚔️</span><div><b>Qilich ' + S.wpn + '-daraja</b><small>Hujum: ' + atk() + ' (+4)</small></div><button ' + (S.coins < wpnCost() ? 'disabled' : '') + ' onclick="buy(\'wpn\')">' + C(wpnCost()) + '</button></div>' +
+      '<div class="card"><span class="em">🛡️</span><div><b>Sovut ' + S.arm + '-daraja</b><small>HP: ' + maxHp() + ' (+15), himoya ortadi</small></div><button ' + (S.coins < armCost() ? 'disabled' : '') + ' onclick="buy(\'arm\')">' + C(armCost()) + '</button></div>' +
+      '<div class="card"><span class="em">🧪</span><div><b>Eliksir</b><small>Sizda: ' + S.pots + ' · 40% HP tiklaydi</small></div><button ' + (S.coins < 15 ? 'disabled' : '') + ' onclick="buy(\'pot\')">' + C(15) + '</button></div>' +
+      '<div class="center"><button class="link" onclick="resetAll()">O‘yinni boshidan boshlash</button></div>';
+  }
+  app.innerHTML = h; B.fxE = B.fxP = B.fxH = null;
+  if (B.gain) { const c = document.getElementById('cn'); if (c) c.classList.add('bump'); B.gain = 0; }
+}
+render();
+try {
+  tg.CloudStorage.getItem('hb2', (err, v) => {
+    if (err || !v) { save(); return; }
+    const c = JSON.parse(v), sc = x => x.wave * 1000 + x.lvl * 10 + x.owned.length;
+    if (CL[c.cls] && Array.isArray(c.owned) && sc(c) > sc(S)) { S = Object.assign(def(), c); save(); B = null; render(); }
+  });
+} catch (e) {}
+</script>
+</body>
+</html>
